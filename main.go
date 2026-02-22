@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -11,6 +12,16 @@ import (
 	"github.com/shaik-aaron/fantasy-backend/intializers"
 	"github.com/shaik-aaron/fantasy-backend/middleware"
 )
+
+func splitTrim(s, sep string) []string {
+	var result []string
+	for _, v := range strings.Split(s, sep) {
+		if trimmed := strings.TrimSpace(v); trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
+}
 
 func init() {
 	intializers.LoadEnv()
@@ -23,13 +34,14 @@ func main() {
 
 	router := gin.Default()
 
-	// Add CORS middleware
-	frontendURL := os.Getenv("FRONTEND_URL")
-	if frontendURL == "" {
-		frontendURL = "http://localhost:5173"
+	// Add CORS middleware (comma-separated: https://app.vercel.app,http://localhost:5173)
+	frontendURLs := os.Getenv("FRONTEND_URL")
+	if frontendURLs == "" {
+		frontendURLs = "http://localhost:5173"
 	}
+	origins := splitTrim(frontendURLs, ",")
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{frontendURL},
+		AllowOrigins:     origins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
