@@ -39,9 +39,15 @@ func main() {
 	if frontendURLs == "" {
 		frontendURLs = "http://localhost:5173"
 	}
-	origins := splitTrim(frontendURLs, ",")
+	allowedOrigins := make(map[string]bool)
+	for _, o := range splitTrim(frontendURLs, ",") {
+		allowedOrigins[strings.TrimSuffix(o, "/")] = true
+	}
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     origins,
+		AllowOriginFunc: func(origin string) bool {
+			origin = strings.TrimSuffix(origin, "/")
+			return allowedOrigins[origin]
+		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
