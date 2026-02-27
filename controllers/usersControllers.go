@@ -94,7 +94,7 @@ func Login(c *gin.Context) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": user.ID,
-		"exp": time.Now().Add(time.Hour).Unix(),
+		"exp": time.Now().Add(time.Hour * 3).Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
@@ -114,5 +114,9 @@ func Validate(c *gin.Context) {
 
 	user, _ := c.Get("user")
 
-	c.JSON(http.StatusOK, gin.H{"message": user})
+	c.JSON(http.StatusOK, gin.H{"message": gin.H{
+		"firstName": user.(models.User).FirstName,
+		"email":     user.(models.User).Email,
+		"userId":    user.(models.User).ID,
+	}})
 }
